@@ -18,6 +18,7 @@ import (
 const subsidy = 10
 
 // Transaction represents a Bitcoin transaction
+// Transaction 代表一个比特币的交易
 type Transaction struct {
 	ID   []byte
 	Vin  []TXInput
@@ -25,11 +26,13 @@ type Transaction struct {
 }
 
 // IsCoinbase checks whether the transaction is coinbase
+// IsCoinbase 检查是否是coinbase交易
 func (tx Transaction) IsCoinbase() bool {
 	return len(tx.Vin) == 1 && len(tx.Vin[0].Txid) == 0 && tx.Vin[0].Vout == -1
 }
 
 // Serialize returns a serialized Transaction
+// Serialize 返回一个序列化的交易
 func (tx Transaction) Serialize() []byte {
 	var encoded bytes.Buffer
 
@@ -43,6 +46,7 @@ func (tx Transaction) Serialize() []byte {
 }
 
 // Hash returns the hash of the Transaction
+// Hash 返回交易的hash
 func (tx *Transaction) Hash() []byte {
 	var hash [32]byte
 
@@ -55,8 +59,9 @@ func (tx *Transaction) Hash() []byte {
 }
 
 // Sign signs each input of a Transaction
+// Sign 签名一个交易的所有输入
 func (tx *Transaction) Sign(privKey ecdsa.PrivateKey, prevTXs map[string]Transaction) {
-	if tx.IsCoinbase() {
+	if tx.IsCoinbase() { // coinbase交易没有输入，所以不需要签名
 		return
 	}
 
@@ -87,6 +92,7 @@ func (tx *Transaction) Sign(privKey ecdsa.PrivateKey, prevTXs map[string]Transac
 }
 
 // String returns a human-readable representation of a transaction
+// String 返回一个人类可读的代表交易的字符串
 func (tx Transaction) String() string {
 	var lines []string
 
@@ -111,6 +117,7 @@ func (tx Transaction) String() string {
 }
 
 // TrimmedCopy creates a trimmed copy of Transaction to be used in signing
+// TrimmedCopy 创建要在签名中使用的事务的修剪副本
 func (tx *Transaction) TrimmedCopy() Transaction {
 	var inputs []TXInput
 	var outputs []TXOutput
@@ -129,6 +136,7 @@ func (tx *Transaction) TrimmedCopy() Transaction {
 }
 
 // Verify verifies signatures of Transaction inputs
+// Verify 校验交易输入的签名
 func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 	if tx.IsCoinbase() {
 		return true
@@ -173,6 +181,7 @@ func (tx *Transaction) Verify(prevTXs map[string]Transaction) bool {
 }
 
 // NewCoinbaseTX creates a new coinbase transaction
+// NewCoinbaseTX 创建一个新的coinbase交易
 func NewCoinbaseTX(to, data string) *Transaction {
 	if data == "" {
 		randData := make([]byte, 20)
@@ -193,6 +202,7 @@ func NewCoinbaseTX(to, data string) *Transaction {
 }
 
 // NewUTXOTransaction creates a new transaction
+// NewUTXOTransaction 创建一个新的交易
 func NewUTXOTransaction(wallet *Wallet, to string, amount int, UTXOSet *UTXOSet) *Transaction {
 	var inputs []TXInput
 	var outputs []TXOutput
@@ -232,6 +242,7 @@ func NewUTXOTransaction(wallet *Wallet, to string, amount int, UTXOSet *UTXOSet)
 }
 
 // DeserializeTransaction deserializes a transaction
+// DeserializeTransaction 反序列化一个交易
 func DeserializeTransaction(data []byte) Transaction {
 	var transaction Transaction
 

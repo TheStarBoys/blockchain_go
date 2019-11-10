@@ -17,12 +17,14 @@ const blocksBucket = "blocks"
 const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
 
 // Blockchain implements interactions with a DB
+// Blockchain 实现与数据库的交互
 type Blockchain struct {
-	tip []byte
+	tip []byte // 最后一个区块的哈希
 	db  *bolt.DB
 }
 
 // CreateBlockchain creates a new blockchain DB
+// CreateBlockchain 创建一个新的区块链数据库
 func CreateBlockchain(address, nodeID string) *Blockchain {
 	dbFile := fmt.Sprintf(dbFile, nodeID)
 	if dbExists(dbFile) {
@@ -69,6 +71,7 @@ func CreateBlockchain(address, nodeID string) *Blockchain {
 }
 
 // NewBlockchain creates a new Blockchain with genesis Block
+// NewBlockchain 从已有的数据库中, 得到区块链数据, 新创建一个区块链对象
 func NewBlockchain(nodeID string) *Blockchain {
 	dbFile := fmt.Sprintf(dbFile, nodeID)
 	if dbExists(dbFile) == false {
@@ -98,25 +101,26 @@ func NewBlockchain(nodeID string) *Blockchain {
 }
 
 // AddBlock saves the block into the blockchain
+// AddBlock 保存区块到区块链中
 func (bc *Blockchain) AddBlock(block *Block) {
 	err := bc.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
 		blockInDb := b.Get(block.Hash)
-
+		// 不允许添加已存在的区块到数据库中
 		if blockInDb != nil {
 			return nil
 		}
-
+		// 添加区块到数据库
 		blockData := block.Serialize()
 		err := b.Put(block.Hash, blockData)
 		if err != nil {
 			log.Panic(err)
 		}
-
+		// 获取最后一个区块
 		lastHash := b.Get([]byte("l"))
 		lastBlockData := b.Get(lastHash)
 		lastBlock := DeserializeBlock(lastBlockData)
-
+		// 更新存储最后一个区块的哈希
 		if block.Height > lastBlock.Height {
 			err = b.Put([]byte("l"), block.Hash)
 			if err != nil {
@@ -133,6 +137,7 @@ func (bc *Blockchain) AddBlock(block *Block) {
 }
 
 // FindTransaction finds a transaction by its ID
+// FindTransaction 通过交易ID找到对应交易
 func (bc *Blockchain) FindTransaction(ID []byte) (Transaction, error) {
 	bci := bc.Iterator()
 
@@ -154,6 +159,7 @@ func (bc *Blockchain) FindTransaction(ID []byte) (Transaction, error) {
 }
 
 // FindUTXO finds all unspent transaction outputs and returns transactions with spent outputs removed
+// FindUTXO 找到所有未花费的交易输出并返回已移除已花费输出的交易集合
 func (bc *Blockchain) FindUTXO() map[string]TXOutputs {
 	UTXO := make(map[string]TXOutputs)
 	spentTXOs := make(map[string][]int)
@@ -198,6 +204,7 @@ func (bc *Blockchain) FindUTXO() map[string]TXOutputs {
 }
 
 // Iterator returns a BlockchainIterat
+// Iterator 返回一个区块链迭代器
 func (bc *Blockchain) Iterator() *BlockchainIterator {
 	bci := &BlockchainIterator{bc.tip, bc.db}
 
@@ -205,6 +212,7 @@ func (bc *Blockchain) Iterator() *BlockchainIterator {
 }
 
 // GetBestHeight returns the height of the latest block
+// GetBestHeight 返回最新块的高度
 func (bc *Blockchain) GetBestHeight() int {
 	var lastBlock Block
 
@@ -224,6 +232,7 @@ func (bc *Blockchain) GetBestHeight() int {
 }
 
 // GetBlock finds a block by its hash and returns it
+// GetBlock 通过区块的哈希值找到一个区块, 并返回
 func (bc *Blockchain) GetBlock(blockHash []byte) (Block, error) {
 	var block Block
 
@@ -350,7 +359,7 @@ func (bc *Blockchain) VerifyTransaction(tx *Transaction) bool {
 
 	return tx.Verify(prevTXs)
 }
-
+// dbExists 检测是否已经存在数据库
 func dbExists(dbFile string) bool {
 	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
 		return false

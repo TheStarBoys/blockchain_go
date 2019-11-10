@@ -42,6 +42,7 @@ func (w Wallet) GetAddress() []byte {
 }
 
 // HashPubKey hashes public key
+// HashPubKey 返回公钥的哈希
 func HashPubKey(pubKey []byte) []byte {
 	publicSHA256 := sha256.Sum256(pubKey)
 
