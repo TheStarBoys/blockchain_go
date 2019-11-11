@@ -12,7 +12,7 @@ type TXInput struct {
 }
 
 // UsesKey checks whether the address initiated the transaction
-// UsesKey
+// UsesKey 检查输入使用了指定密钥来解锁一个输出
 func (in *TXInput) UsesKey(pubKeyHash []byte) bool {
 	lockingHash := HashPubKey(in.PubKey)
 

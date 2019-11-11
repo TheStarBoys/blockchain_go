@@ -257,6 +257,7 @@ func (bc *Blockchain) GetBlock(blockHash []byte) (Block, error) {
 }
 
 // GetBlockHashes returns a list of hashes of all the blocks in the chain
+// GetBlockHashes 返回区块链中所有区块哈希的集合
 func (bc *Blockchain) GetBlockHashes() [][]byte {
 	var blocks [][]byte
 	bci := bc.Iterator()
@@ -275,6 +276,7 @@ func (bc *Blockchain) GetBlockHashes() [][]byte {
 }
 
 // MineBlock mines a new block with the provided transactions
+// MineBlock 根据提供的交易挖出一个新区块
 func (bc *Blockchain) MineBlock(transactions []*Transaction) *Block {
 	var lastHash []byte
 	var lastHeight int
@@ -327,6 +329,7 @@ func (bc *Blockchain) MineBlock(transactions []*Transaction) *Block {
 }
 
 // SignTransaction signs inputs of a Transaction
+// SignTransaction 签名交易的输入
 func (bc *Blockchain) SignTransaction(tx *Transaction, privKey ecdsa.PrivateKey) {
 	prevTXs := make(map[string]Transaction)
 
@@ -342,6 +345,7 @@ func (bc *Blockchain) SignTransaction(tx *Transaction, privKey ecdsa.PrivateKey)
 }
 
 // VerifyTransaction verifies transaction input signatures
+// VerifyTransaction 校验交易输入的签名
 func (bc *Blockchain) VerifyTransaction(tx *Transaction) bool {
 	if tx.IsCoinbase() {
 		return true
